@@ -72,17 +72,23 @@ local function AddUnitToGroup(unitID, unitDefID, unitTeam)
   group.unitCount = group.unitCount + 1
   group.units[group.unitCount] = unitID
   local unitSpeed = UnitDefs[unitDefID].speed
-  if unitSpeed < group.minSpeed then
+  -- likely no longer needed after setting to 9999, should see if still being hit
+  if not group.minSpeed then
+  Spring.Echo("Initial set of groupSpeed")
+  group.minSpeed = unitSpeed
+  elseif unitSpeed < group.minSpeed then
   group.minSpeed = unitSpeed
   end
+  Spring.Echo("groupId: " .. groupID .. " speed: " .. group.minSpeed)
 end
 
 local function RemoveUnitFromGroup(unitID, unitDefID, unitTeam)
   local state = unitToState[unitID]
   local groupID = GetGroupID(unitTeam, state)
   local group = groups[groupID]
-  local uID, uDefID, newMinSpeed = 0, 0, math.maxinteger
-  for i = 1, #group.unitCount - 1 do
+  local uID, uDefID, newMinSpeed = 0, 0, 9999
+
+  for i = 1, group.unitCount - 1 do
     uID = group.units[i]
     if uID == unitID then
       group.units[i] = group.units[group.unitCount]
@@ -97,6 +103,8 @@ local function RemoveUnitFromGroup(unitID, unitDefID, unitTeam)
   group.units[group.unitCount] = nil
   group.unitCount = group.unitCount - 1
   group.minSpeed = newMinSpeed
+  
+  Spring.Echo("groupId: " .. groupID .. " speed: " .. group.minSpeed)
 end
 
 function gadget:UnitCommand(unitID, unitDefID, unitTeam, cmdID)
@@ -106,6 +114,7 @@ function gadget:UnitCommand(unitID, unitDefID, unitTeam, cmdID)
 
     if state ~= DEFAULT_STATE then
       RemoveUnitFromGroup(unitID, unitDefID, unitTeam)
+      -- Spring.Echo(unitId .. " removed from group " .. state)
     end
 
     state = state % CMD_COUNT + 1
@@ -114,6 +123,7 @@ function gadget:UnitCommand(unitID, unitDefID, unitTeam, cmdID)
 
     if state ~= DEFAULT_STATE then
       AddUnitToGroup(unitID, unitDefID, unitTeam)
+      -- Spring.Echo(unitId .. " added to group " .. state)
     end
   end
 end
@@ -158,10 +168,13 @@ function gadget:Initialize()
     groups[i] = {
       units = {},
       unitCount = 0,
-      minSpeed = math.maxinteger
+      -- setting this math.maxinteger resulted in comparisons with nil
+      -- 9999 has been determined by expert opinion to be very fast
+      minSpeed = 9999
     }
   end
 
   GG.SpeedGroups = external
+  GG.SpeedGroupValues = groups
 end
 
