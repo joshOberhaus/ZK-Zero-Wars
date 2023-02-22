@@ -23,12 +23,12 @@ local PLATFORMHEIGHT = 128
 local MAPCENTER = Game.mapSizeX / 2
 
 local bomberDefIDs = {
-  [UnitDefNames["bomberassault"].id] = true,
-  [UnitDefNames["bomberdisarm"].id] = true,
-  [UnitDefNames["bomberheavy"].id] = true,
-  [UnitDefNames["bomberprec"].id] = true,
-  [UnitDefNames["bomberriot"].id] = true,
-  [UnitDefNames["bomberstrike"].id] = true,
+    [UnitDefNames["bomberassault"].id] = true,
+    [UnitDefNames["bomberdisarm"].id] = true,
+    [UnitDefNames["bomberheavy"].id] = true,
+    [UnitDefNames["bomberprec"].id] = true,
+    [UnitDefNames["bomberriot"].id] = true,
+    [UnitDefNames["bomberstrike"].id] = true,
 }
 
 local sides = {}
@@ -155,16 +155,24 @@ function gadget:GameStart()
         side.platIterator = -1
     end
 
+    local dGunCMD = 105
+    local jumpCMD = 38521
     GG.UnitCMDBlocker.AllowCommand(1, 1)
+    GG.UnitCMDBlocker.AllowCommand(1, dGunCMD) -- allow dgun cmds
+    GG.UnitCMDBlocker.AllowCommand(1, jumpCMD) -- allow jump
 
-    GG.UnitCMDBlocker.AppendFilter(1, function(unitID, unitDefID, cmdID, cmdParams, cmdOptions, cmdTag, synced)
-      -- allow bombers to rearm
-      if cmdID == 1 then
-        return bomberDefIDs[unitDefID] == true and synced == -1
-      end
+    local filter = function(unitID, unitDefID, cmdID, cmdParams, cmdOptions, cmdTag, synced)
+        -- allow bombers to rearm
+        if cmdID == 1 then
+            return bomberDefIDs[unitDefID] == true and synced == -1
+        elseif cmdID == dGunCMD or cmdID == jumpCMD then -- remove jump / dgun cmd after use
+            return Util.RemoveUnitCmdDesc(unitID, cmdID)
+        end
 
-      return true
-    end)
+        return true
+    end
+
+    GG.UnitCMDBlocker.AppendFilter(1, filter)
 end
 
 function gadget:GameFrame(frame)
@@ -192,6 +200,13 @@ function gadget:GameFrame(frame)
                         {"alt"}
                     )
 
+                    local cmdDescTable = Spring.GetUnitCmdDescs(unitID)
+                    if cmdDescTable then
+                        for i = 1, #cmdDescTable do
+                            Spring.RemoveUnitCmdDesc(unitID, cmdDescTable[i])
+                        end
+                    end
+
                     local onIdle = function()
                         local x,_, z = Spring.GetUnitPosition(unitID)
                         if math.abs(x - side.attackPosX) > 200 then
@@ -218,9 +233,10 @@ function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
             local cmdDescTable = Spring.GetUnitCmdDescs(unitID)
             if cmdDescTable then
                 for i = 1, #cmdDescTable do
-                    Spring.RemoveUnitCmdDesc(unitID, i)
+                    Spring.RemoveUnitCmdDesc(unitID, cmdDescTable[i])
                 end
             end
+            GG.SpeedGroups.InsertCmd(unitID)
         end
     end
 end
@@ -254,6 +270,7 @@ function gadget:AllowFeatureCreation(featureDefID, teamID, x, y, z)
 end
 
 function gadget:Initialize()
+    GG.GetClosestMetalSpot = nil
 end
 
 function gadget:GameOver()

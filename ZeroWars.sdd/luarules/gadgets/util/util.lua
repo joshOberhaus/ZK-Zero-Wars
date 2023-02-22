@@ -20,6 +20,14 @@ return {
         return replacements
     end,
 
+    RemoveUnitCmdDesc = function(unitID, cmdID)
+        local cmdDescID = Spring.FindUnitCmdDesc(unitID, cmdID)
+        if cmdDescID then
+            Spring.RemoveUnitCmdDesc(unitID, cmdDescID)
+        end
+        return cmdDescID ~= nil
+    end,
+
     MergeTeams = function (teamID, TargetTeamID)
         local playerList = Spring.GetPlayerList(teamID)
         for i = 1, #playerList do
@@ -66,7 +74,7 @@ return {
         for _z = z, z + height do
             Spring.SetSquareBuildingMask(x + width + 1, _z, mask)
         end
-    
+
         Spring.SetSquareBuildingMask(x - 1, z - 1, mask)
         Spring.SetSquareBuildingMask(x + width + 1, z - 1, mask)
         Spring.SetSquareBuildingMask(x - 1, z + height + 1, mask)
@@ -89,7 +97,7 @@ return {
                 end
             end
         end
-        
+
         return AllyStarts
     end,
 
