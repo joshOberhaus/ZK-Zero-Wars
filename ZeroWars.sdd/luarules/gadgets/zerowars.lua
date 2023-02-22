@@ -184,6 +184,7 @@ function gadget:GameFrame(frame)
                 local plat = side.platforms[side.platIterator + 1]
                 local units = GG.DeployZones.Deploy(plat.DeployZoneID)
 
+                Spring.Echo("Spawning...")
                 for i = 1, #units do
                     local unitID = units[i]
                     local x, _, z = Spring.GetUnitPosition(unitID)
@@ -217,6 +218,14 @@ function gadget:GameFrame(frame)
                     end
                     GG.EventOnUnitIdle(unitID, onIdle)
                     GG.UnitCMDBlocker.AppendUnit(unitID, 1)
+                end
+                
+                for i = 1, #GG.SpeedGroupValues do
+                    Spring.Echo("Setting speeds for group " .. i .. " (max " .. GG.SpeedGroupValues[i].minSpeed .. ")" )
+                    for j = 1, #GG.SpeedGroupValues[i].units do
+                        Spring.Echo("Setting speeds for unit " .. GG.SpeedGroupValues[i].units[j] )
+                        -- Spring.MoveCtrl.SetGroundMoveTypeData(GG.SpeedGroupValues[i].units[j], "maxSpeed", GG.SpeedGroupValues[i].minSpeed)
+                    end
                 end
             end
         end
