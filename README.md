@@ -15,6 +15,7 @@ A custom zero-k map mod: Send waves of units across the map to destroy the enemy
 
 * If you add or remove a file from the map you will have to restart zero-k
 * Otherwise you just need to restart the match
+* F8 In-game opens the Lua Log
 
 ## Useful Links
 
