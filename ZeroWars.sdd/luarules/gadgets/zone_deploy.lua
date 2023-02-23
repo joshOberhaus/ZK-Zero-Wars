@@ -41,11 +41,11 @@ local function Deploy(zoneID)
                 local newY = spGetGroundHeight(newX, newZ)
                 local unitDefID = spGetUnitDefID(selectedUnits[i])
                 local newUnit = spCreateUnit(unitDefID, newX, newY, newZ, zone.faceDir, zone.teamID, true)
-                newUnits[#newUnits+1] = newUnit
-            
+                newUnits[#newUnits+1] = {newUnitID = newUnit, originUnitID = selectedUnits[i]}
+                Spring.Echo("Cloning " .. selectedUnits[i] .." to " .. newUnit )
                 GG.AutoBuild(newUnit, UnitDefs[unitDefID].metalCost / zone.buildTime)
             end
-
+            
         end
     end
     

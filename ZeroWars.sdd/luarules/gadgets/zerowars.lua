@@ -186,7 +186,10 @@ function gadget:GameFrame(frame)
 
                 Spring.Echo("Spawning...")
                 for i = 1, #units do
-                    local unitID = units[i]
+                    local unitID = units[i].newUnitID
+                    local originUnitID = units[i].originUnitID
+                    Spring.Echo("Spawning unit " .. unitID)
+                              
                     local x, _, z = Spring.GetUnitPosition(unitID)
                     Spring.GiveOrderToUnit(
                         unitID,
@@ -201,6 +204,15 @@ function gadget:GameFrame(frame)
                         {"alt"}
                     )
 
+                    --  would be more efficient to have: nearly literally anything else than this.
+                    for grpIdx = 1, #GG.SpeedGroupValues do
+                        for unitIdx = 1, #GG.SpeedGroupValues[grpIdx].units do
+                            if originUnitID == GG.SpeedGroupValues[grpIdx].units[unitIdx] then
+                                Spring.Echo("Found a match in Speed Group " .. grpIdx )
+                                Spring.MoveCtrl.SetGroundMoveTypeData(unitID, "maxSpeed", GG.SpeedGroupValues[grpIdx].minSpeed)
+                            end
+                        end
+                    end
                     local cmdDescTable = Spring.GetUnitCmdDescs(unitID)
                     if cmdDescTable then
                         for i = 1, #cmdDescTable do
@@ -218,14 +230,6 @@ function gadget:GameFrame(frame)
                     end
                     GG.EventOnUnitIdle(unitID, onIdle)
                     GG.UnitCMDBlocker.AppendUnit(unitID, 1)
-                end
-                
-                for i = 1, #GG.SpeedGroupValues do
-                    Spring.Echo("Setting speeds for group " .. i .. " (max " .. GG.SpeedGroupValues[i].minSpeed .. ")" )
-                    for j = 1, #GG.SpeedGroupValues[i].units do
-                        Spring.Echo("Setting speeds for unit " .. GG.SpeedGroupValues[i].units[j] )
-                        -- Spring.MoveCtrl.SetGroundMoveTypeData(GG.SpeedGroupValues[i].units[j], "maxSpeed", GG.SpeedGroupValues[i].minSpeed)
-                    end
                 end
             end
         end
