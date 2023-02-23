@@ -209,7 +209,7 @@ function gadget:GameFrame(frame)
                         for unitIdx = 1, #GG.SpeedGroupValues[grpIdx].units do
                             if originUnitID == GG.SpeedGroupValues[grpIdx].units[unitIdx] then
                                 Spring.Echo("Found a match in Speed Group " .. grpIdx )
-                                Spring.MoveCtrl.SetGroundMoveTypeData(unitID, "maxSpeed", GG.SpeedGroupValues[grpIdx].minSpeed)
+                                Spring.GiveOrderToUnit(unitID, CMD_WANTED_SPEED, GG.SpeedGroupValues[grpIdx].minSpeed, 0)
                             end
                         end
                     end
